@@ -1,13 +1,23 @@
-import { useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import RatingSelect from './RatingSelect';
 import Card from "./shared/Card";
 import Button from "./shared/Button";
+import FeedbackContext from '../context/FeedbackContext';
 
-const FeedbackForm = ({ handleAdd }) => {
+const FeedbackForm = () => {
   const [text, setText] = useState('');
   const [rating, setRating] = useState(10);
   const [btnDisabled, setBtnDisabled] = useState(true);
   const [message, setMessage] = useState('');
+  const { handleAdd, feedbackEdit, handleUpdateFeedback } = useContext(FeedbackContext);
+
+  useEffect(() => {
+    if (feedbackEdit.edit === true) {
+      setBtnDisabled(false);
+      setText(feedbackEdit.item.text);
+      setRating(feedbackEdit.item.rating);
+    }
+  }, [feedbackEdit])
 
   const handleTextChange = (e) => {
     if (text === '') {
@@ -24,23 +34,28 @@ const FeedbackForm = ({ handleAdd }) => {
     setText(e.target.value)
   };
 
-  const handleSabmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if(text.trim().length > 10) {
+    if (text.trim().length > 10) {
       const newFeedback = {
         text,
         rating,
       }
 
-      handleAdd(newFeedback);
+      if (feedbackEdit.edit === true) {
+        handleUpdateFeedback(feedbackEdit.item.id, newFeedback);
+      } else {
+        handleAdd(newFeedback);
+      }
+
       setText('');
     }
   }
 
   return (
     <Card>
-      <form onSubmit={handleSabmit}>
+      <form onSubmit={handleSubmit}>
         <h2>How would you rate service with us ?</h2>
         <RatingSelect select={(rating) => setRating(rating)} />
         <div className="input-group">
